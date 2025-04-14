@@ -24,16 +24,26 @@ def setup_logging(log_level: int = logging.INFO) -> None:
     # Clear any existing handlers
     root_logger.handlers = []
     
-    # File handler with detailed format
-    file_handler = logging.FileHandler(log_dir / 'downloader.log')
+    # File handler with UTF-8 encoding and detailed format
+    file_handler = logging.FileHandler(log_dir / 'downloader.log', encoding='utf-8', errors='replace')
     file_handler.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+    file_handler.setLevel(log_level)
     root_logger.addHandler(file_handler)
     
-    # Console handler with simpler format
+    # Console handler with UTF-8 encoding and simpler format
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setFormatter(formatter)
+    console_handler.encoding = 'utf-8'
+    console_handler.setLevel(log_level)
     root_logger.addHandler(console_handler)
 
+    # Force immediate output
+    root_logger.propagate = False
+    
     # Ensure yt-dlp's output is also captured
     yt_dlp_logger = logging.getLogger('yt_dlp')
     yt_dlp_logger.setLevel(log_level)
+    
+    # Disable other loggers that might interfere
+    logging.getLogger('urllib3').setLevel(logging.WARNING)
+    logging.getLogger('requests').setLevel(logging.WARNING)
